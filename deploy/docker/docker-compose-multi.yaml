@@ -1,123 +1,84 @@
-version: "3.8"
+Lowcoder
 
+version: '3'
 services:
-
-  ##
-  ## Start services required for Lowcoder (MongoDB and Redis)
-  ##
   mongodb:
-    image: "mongo:7.0"
+    image: 'mongo:4.4'
     container_name: mongodb
     environment:
       MONGO_INITDB_DATABASE: lowcoder
       MONGO_INITDB_ROOT_USERNAME: lowcoder
       MONGO_INITDB_ROOT_PASSWORD: secret123
     volumes:
-      - ./lowcoder-stacks/data/mongodb:/data/db
+      - './mongodata:/data/db'
     restart: unless-stopped
-
   redis:
-    image: redis:7-alpine
+    image: 'redis:7-alpine'
     container_name: redis
-    restart: unless-stopped
-
-  ##
-  ## Start Lowcoder backend services (api-service and node-service)
-  ##
   lowcoder-api-service:
-    image: lowcoderorg/lowcoder-ce-api-service:latest
+    image: 'lowcoderorg/lowcoder-ce-api-service:latest'
     container_name: lowcoder-api-service
+    ports:
+      - '8080:8080'
     environment:
-      LOWCODER_PUBLIC_URL: "http://localhost:3000/"
-      LOWCODER_PUID: "9001"
-      LOWCODER_PGID: "9001"
-      LOWCODER_MONGODB_URL: "mongodb://lowcoder:secret123@mongodb/lowcoder?authSource=admin"
-      LOWCODER_REDIS_URL: "redis://redis:6379"
-      LOWCODER_NODE_SERVICE_URL: "http://lowcoder-node-service:6060"
+      LOWCODER_PUID: '9001'
+      LOWCODER_PGID: '9001'
+      LOWCODER_MONGODB_URL: 'mongodb://lowcoder:secret123@mongodb/lowcoder?authSource=admin'
+      LOWCODER_REDIS_URL: 'redis://redis:6379'
+      LOWCODER_NODE_SERVICE_URL: 'http://lowcoder-node-service:6060'
       LOWCODER_MAX_QUERY_TIMEOUT: 120
-      LOWCODER_MAX_REQUEST_SIZE: 20m
-      LOWCODER_EMAIL_AUTH_ENABLED: "true"
-      LOWCODER_EMAIL_SIGNUP_ENABLED: "true"
-      LOWCODER_CREATE_WORKSPACE_ON_SIGNUP: "true"
-      LOWCODER_DB_ENCRYPTION_PASSWORD: "lowcoder.org"
-      LOWCODER_DB_ENCRYPTION_SALT: "lowcoder.org"
-      LOWCODER_CORS_DOMAINS: "*"
+      LOWCODER_EMAIL_AUTH_ENABLED: 'true'
+      LOWCODER_EMAIL_SIGNUP_ENABLED: 'false'
+      LOWCODER_CREATE_WORKSPACE_ON_SIGNUP: 'true'
+      LOWCODER_DB_ENCRYPTION_PASSWORD: lowcoder.org
+      LOWCODER_DB_ENCRYPTION_SALT: lowcoder.org
+      LOWCODER_CORS_DOMAINS: '*'
       LOWCODER_MAX_ORGS_PER_USER: 100
       LOWCODER_MAX_MEMBERS_PER_ORG: 1000
       LOWCODER_MAX_GROUPS_PER_ORG: 100
       LOWCODER_MAX_APPS_PER_ORG: 1000
       LOWCODER_MAX_DEVELOPERS: 50
-      LOWCODER_API_KEY_SECRET: "5a41b090758b39b226603177ef48d73ae9839dd458ccb7e66f7e7cc028d5a50b"
-      LOWCODER_PLUGINS_DIR: "../plugins"
-      LOWCODER_API_RATE_LIMIT: 50
+      LOWCODER_API_KEY_SECRET: 5a41b090758b39b226603177ef48d73ae9839dd458ccb7e66f7e7cc028d5a50b
       LOWCODER_WORKSPACE_MODE: SAAS
-      LOWCODER_MARKETPLACE_PRIVATE_MODE: "true"
       LOWCODER_ADMIN_SMTP_HOST: smtp.gmail.com
       LOWCODER_ADMIN_SMTP_PORT: 587
-      LOWCODER_ADMIN_SMTP_USERNAME:
-      LOWCODER_ADMIN_SMTP_PASSWORD:
-      LOWCODER_ADMIN_SMTP_AUTH: "true"
-      LOWCODER_ADMIN_SMTP_SSL_ENABLED: "false"
-      LOWCODER_ADMIN_SMTP_STARTTLS_ENABLED: "true"
-      LOWCODER_ADMIN_SMTP_STARTTLS_REQUIRED: "true"
+      LOWCODER_ADMIN_SMTP_USERNAME: null
+      LOWCODER_ADMIN_SMTP_PASSWORD: null
+      LOWCODER_ADMIN_SMTP_AUTH: true
+      LOWCODER_ADMIN_SMTP_SSL_ENABLED: false
+      LOWCODER_ADMIN_SMTP_STARTTLS_ENABLED: true
+      LOWCODER_ADMIN_SMTP_STARTTLS_REQUIRED: true
       LOWCODER_EMAIL_NOTIFICATIONS_SENDER: info@localhost
-      LOWCODER_SUPERUSER_USERNAME: admin@localhost
-      LOWCODER_SUPERUSER_PASSWORD:
     restart: unless-stopped
     depends_on:
       - mongodb
       - redis
-    volumes:
-      - ./lowcoder-stacks:/lowcoder-stacks
-      - ./lowcoder-stacks/assets:/lowcoder/assets
-
   lowcoder-node-service:
-    image: lowcoderorg/lowcoder-ce-node-service:latest
+    image: 'lowcoderorg/lowcoder-ce-node-service:latest'
     container_name: lowcoder-node-service
     environment:
-      LOWCODER_PUID: "9001"
-      LOWCODER_PGID: "9001"
-      LOWCODER_API_SERVICE_URL: "http://lowcoder-api-service:8080"
+      LOWCODER_PUID: '9001'
+      LOWCODER_PGID: '9001'
+      LOWCODER_API_SERVICE_URL: 'http://lowcoder-api-service:8080'
     restart: unless-stopped
     depends_on:
       - lowcoder-api-service
-
-  ##
-  ## Start Lowcoder web frontend
-  ##
   lowcoder-frontend:
-    image: lowcoderorg/lowcoder-ce-frontend:latest
+    image: 'lowcoderorg/lowcoder-ce-frontend:latest'
     container_name: lowcoder-frontend
     ports:
-      - "2101:3000"
+      - '3000:3000'
     environment:
-      LOWCODER_PUID: "9001"
-      LOWCODER_PGID: "9001"
+      LOWCODER_PUID: '9001'
+      LOWCODER_PGID: '9001'
       LOWCODER_MAX_REQUEST_SIZE: 20m
       LOWCODER_MAX_QUERY_TIMEOUT: 120
-      LOWCODER_API_SERVICE_URL: "http://lowcoder-api-service:8080"
-      LOWCODER_NODE_SERVICE_URL: "http://lowcoder-node-service:6060"
+      LOWCODER_API_SERVICE_URL: 'http://lowcoder-api-service:8080'
+      LOWCODER_NODE_SERVICE_URL: 'http://lowcoder-node-service:6060'
     restart: unless-stopped
     depends_on:
       - lowcoder-node-service
       - lowcoder-api-service
     volumes:
-      - ./lowcoder-stacks/assets:/lowcoder/assets
+      - './static-assets:/lowcoder/assets'
 
-  ##
-  ## Start Nginx service as a reverse proxy for the Lowcoder services
-  ##
-  nginx:
-    image: nginx:latest
-    container_name: nginx
-    ports:
-      - "8070:80"  # Change this line
-    volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf   # Adjust path to your nginx config
-    depends_on:
-      - lowcoder-api-service
-    restart: unless-stopped
-
-networks:
-  default:
-    driver: bridge
