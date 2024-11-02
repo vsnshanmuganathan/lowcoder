@@ -16,7 +16,7 @@ services:
       - ./lowcoder-stacks/data/mongodb:/data/db
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "mongo", "--eval", "db.runCommand({ ping: 1 })"]
+      test: ["CMD", "mongo", "--username", "lowcoder", "--password", "secret123", "--authenticationDatabase", "admin", "--eval", "db.adminCommand('ping')"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -123,7 +123,7 @@ services:
         condition: service_healthy
     volumes:
       - ./lowcoder-stacks/assets:/lowcoder/assets
-
+      
   ##
   ## Start Nginx service as a reverse proxy for the Lowcoder services
   ##
